@@ -2,5 +2,7 @@
 name = "pype"
 version = "0.1.0"
 edition = "2021"
+description = "Python oneliner helper"
+license = "Apache-2.0"
 
 [dependencies]
