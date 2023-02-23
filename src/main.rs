@@ -12,5 +12,7 @@ fn main() {
     println!("Writing to {}", fifo_path.display());
 
     let mut w = fs::File::create(&fifo_path).unwrap();
+
+    // TODO: receive C-c, cleanup tempdir
     _ = io::copy(&mut reader, &mut w);
 }
