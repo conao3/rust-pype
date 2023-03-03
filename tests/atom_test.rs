@@ -8,5 +8,8 @@ fn test() {
     let c3 = arena.alloc(LispExp::new_symbol("bar"));
 
     let e1 = pype::alloc!(arena, [c1, c2, c3]);
-    assert_eq!(e1.upgrade().unwrap().borrow().to_string(), "(1 foo bar)");
+    assert_eq!(
+        e1.upgrade().unwrap().borrow().to_string(),
+        "(1 \"foo\" bar)"
+    );
 }

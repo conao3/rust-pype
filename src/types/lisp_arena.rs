@@ -51,7 +51,6 @@ macro_rules! alloc {
     };
 }
 
-
 impl Default for LispArena {
     fn default() -> Self {
         Self {

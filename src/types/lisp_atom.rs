@@ -13,7 +13,7 @@ impl fmt::Display for LispAtom {
         match self {
             LispAtom::Int(e) => write!(f, "{}", e),
             LispAtom::Float(e) => write!(f, "{}", e),
-            LispAtom::String(e) => write!(f, "{}", e),
+            LispAtom::String(e) => write!(f, "\"{}\"", e),
             LispAtom::Symbol(e) => write!(f, "{}", e),
         }
     }
