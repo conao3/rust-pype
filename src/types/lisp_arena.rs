@@ -26,23 +26,24 @@ impl LispArena {
     }
 }
 
+#[macro_export]
 macro_rules! alloc {
     ($arena: expr, []) => {
         $arena.alloc_symbol("nil")
     };
     ($arena: expr, [$exp: tt]) => {{
-        let e = alloc!($arena, $exp);
-        let nil = alloc!($arena, []);
+        let e = $crate::alloc!($arena, $exp);
+        let nil = $crate::alloc!($arena, []);
         $arena.alloc((e, nil).into())
     }};
     ($arena: expr, [$car: tt ; $cdr: tt]) => {{
-        let car = alloc!($arena, $car);
-        let cdr = alloc!($arena, $cdr);
+        let car = $crate::alloc!($arena, $car);
+        let cdr = $crate::alloc!($arena, $cdr);
         $arena.alloc((car, cdr).into())
     }};
     ($arena: expr, [$car: tt, $($rest: tt),* $( ; $last_cdr: tt )?]) => {{
-        let car = alloc!($arena, $car);
-        let cdr = alloc!($arena, [$($rest),* $( ; $last_cdr )?]);
+        let car = $crate::alloc!($arena, $car);
+        let cdr = $crate::alloc!($arena, [$($rest),* $( ; $last_cdr )?]);
         $arena.alloc((car, cdr).into())
     }};
     ($arena: expr, $exp: tt) => {
