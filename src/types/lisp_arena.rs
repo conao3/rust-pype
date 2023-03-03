@@ -31,18 +31,18 @@ macro_rules! alloc {
         $arena.alloc_symbol("nil")
     };
     ($arena: expr, [$exp: tt]) => {{
-        let e = crate::types::alloc!($arena, $exp);
-        let nil = crate::types::alloc!($arena, []);
+        let e = alloc!($arena, $exp);
+        let nil = alloc!($arena, []);
         $arena.alloc((e, nil).into())
     }};
     ($arena: expr, [$car: tt ; $cdr: tt]) => {{
-        let car = crate::types::alloc!($arena, $car);
-        let cdr = crate::types::alloc!($arena, $cdr);
+        let car = alloc!($arena, $car);
+        let cdr = alloc!($arena, $cdr);
         $arena.alloc((car, cdr).into())
     }};
     ($arena: expr, [$car: tt, $($rest: tt),* $( ; $last_cdr: tt )?]) => {{
-        let car = crate::types::alloc!($arena, $car);
-        let cdr = crate::types::alloc!($arena, [$($rest),* $( ; $last_cdr )?]);
+        let car = alloc!($arena, $car);
+        let cdr = alloc!($arena, [$($rest),* $( ; $last_cdr )?]);
         $arena.alloc((car, cdr).into())
     }};
     ($arena: expr, $exp: tt) => {
@@ -50,7 +50,6 @@ macro_rules! alloc {
     };
 }
 
-pub(crate) use alloc;
 
 impl Default for LispArena {
     fn default() -> Self {
