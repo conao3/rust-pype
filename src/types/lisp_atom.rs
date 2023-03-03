@@ -31,6 +31,12 @@ impl From<f64> for LispAtom {
     }
 }
 
+impl From<&str> for LispAtom {
+    fn from(string: &str) -> Self {
+        LispAtom::String(string.to_string())
+    }
+}
+
 impl From<String> for LispAtom {
     fn from(string: String) -> Self {
         LispAtom::String(string)
