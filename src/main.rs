@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 
-use pype::{generator, types};
+use pype::{generator, types, gen_python};
 
 use std::{
     fs,
@@ -60,33 +60,7 @@ fn main() {
     let c23 = arena.alloc(types::LispAtom::new_symbol("f").into());
 
 
-    let commands = args.opt_strs("e");
-    let e2 = match commands.len() {
-        0 => {
-            let c31 = arena.alloc(types::LispAtom::new_symbol("call").into());
-            let c32 = arena.alloc(types::LispAtom::new_symbol("print").into());
-            let c33 = arena.alloc(types::LispAtom::new_symbol("line").into());
-
-            let c41 = arena.alloc(types::LispAtom::new_symbol("kw").into());
-            let c42 = arena.alloc(types::LispAtom::new_symbol("end").into());
-            let c43 = arena.alloc("".into());
-
-            let e1 = pype::alloc!(arena, [c41, c42, c43]);
-            let e2 = pype::alloc!(arena, [c31, c32, c33, e1]);
-            e2
-        },
-        _ => {
-            let c51 = arena.alloc(types::LispAtom::new_symbol("progn").into());
-            let mut e5 = pype::alloc!(arena, []);
-            for cmd in commands.iter().rev() {
-                let c52 = arena.alloc(types::LispAtom::new_raw_text(cmd).into());
-                e5 = pype::alloc!(arena, [c52; e5]);
-            }
-            let e6 = pype::alloc!(arena, [c51; e5]);
-            e6
-        }
-    };
-
+    let e2 = gen_python::do_e(_opts, args, &mut arena);
     let e3 = pype::alloc!(arena, [c21, c22, c23, e2]);
     let e4 = pype::alloc!(arena, [c11, [c12, c13, c14], c15, e3]);
 
