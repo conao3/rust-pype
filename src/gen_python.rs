@@ -55,24 +55,23 @@ pub fn do_l(
     args: &getopts::Matches,
     arena: &mut types::LispArena,
 ) -> types::LispExpRef {
-    match args.opt_present("l") {
-        true => {
-            let s_progn = arena.alloc(types::LispAtom::new_symbol("progn").into());
-            let s_assign = arena.alloc(types::LispAtom::new_symbol("assign").into());
-            let s_line = arena.alloc(types::LispAtom::new_symbol("line").into());
-            let s_call = arena.alloc(types::LispAtom::new_symbol("call").into());
-            let s_attr = arena.alloc(types::LispAtom::new_symbol("attr").into());
-            let s_rstrip = arena.alloc(types::LispAtom::new_symbol("rstrip").into());
-            crate::alloc!(
-                arena,
-                [
-                    s_progn,
-                    [s_assign, s_line, [s_call, [s_attr, s_line, s_rstrip]]],
-                    cur
-                ]
-            )
-        }
-        false => cur,
+    if args.opt_present("l") && args.opt_present("n") {
+        let s_progn = arena.alloc(types::LispAtom::new_symbol("progn").into());
+        let s_assign = arena.alloc(types::LispAtom::new_symbol("assign").into());
+        let s_line = arena.alloc(types::LispAtom::new_symbol("line").into());
+        let s_call = arena.alloc(types::LispAtom::new_symbol("call").into());
+        let s_attr = arena.alloc(types::LispAtom::new_symbol("attr").into());
+        let s_rstrip = arena.alloc(types::LispAtom::new_symbol("rstrip").into());
+        crate::alloc!(
+            arena,
+            [
+                s_progn,
+                [s_assign, s_line, [s_call, [s_attr, s_line, s_rstrip]]],
+                cur
+            ]
+        )
+    } else {
+        cur
     }
 }
 
