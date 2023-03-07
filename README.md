@@ -83,5 +83,17 @@ cat sample1 | pype -m datetime -nle 'print(f"- {line}:", (datetime.date.today() 
 - 3: 2023-03-11
 ```
 
+You can use any Python module such as `beautifulsoup4`.
+
+```bash
+$ curl -L dev.to | pype -m bs4 -le 'for a in bs4.BeautifulSoup(f.read(), "html.parser").find_all("h2", class_="crayons-story__title"):print(a.text.strip())' | python
+Top 7 Featured DEV Posts from the Past Week
+Six Years on DEV, Already?
+Open Source Maintenance is Community Organizing
+The Awesome Side of GitHub - Awesome Lists
+Codility === Sadness
+Meme Monday 😝
+```
+
 ## License
 Apache License 2.0
