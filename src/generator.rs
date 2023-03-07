@@ -35,6 +35,10 @@ fn gen_cons(car: &types::LispExpRef, cdr: &types::LispExpRef) -> String {
         "progn" => gen_cons_progn(cdr),
         "attr" => gen_cons_attr(cdr),
         "assign" => gen_cons_assign(cdr),
+        "import" => gen_cons_import(cdr),
+        "lambda" => gen_cons_lambda(cdr),
+        "*" => gen_cons_star(cdr),
+        "**" => gen_cons_dstar(cdr),
         _ => panic!("Unknown function: {}", fn_),
     }
 }
@@ -106,6 +110,51 @@ fn gen_cons_assign(args: &types::LispExpRef) -> String {
     let v2 = arg_iter.next().unwrap();
 
     format!("{} = {}", gen(&v1), gen(&v2))
+}
+
+fn gen_cons_import(args: &types::LispExpRef) -> String {
+    let args_ptr = args.upgrade().unwrap();
+
+    let mut arg_iter = args_ptr.borrow().iter();
+    let v1 = arg_iter.next().unwrap();
+
+    format!("import {}", gen(&v1))
+}
+
+fn gen_cons_lambda(args: &types::LispExpRef) -> String {
+    let args_ptr = args.upgrade().unwrap();
+
+    let mut arg_iter = args_ptr.borrow().iter();
+    let v1 = arg_iter.next().unwrap();
+    let v2 = arg_iter.next().unwrap();
+
+    let largs = match &*v1.upgrade().unwrap().borrow() {
+        types::LispExp::Atom(..) => gen(&v1),
+        types::LispExp::Cons { .. } => {
+            let v1_iter = v1.upgrade().unwrap().borrow().iter();
+            v1_iter.map(|x| gen(&x)).collect::<Vec<_>>().join(", ")
+        }
+    };
+
+    format!("lambda {}: {}", largs, gen(&v2))
+}
+
+fn gen_cons_star(args: &types::LispExpRef) -> String {
+    let args_ptr = args.upgrade().unwrap();
+
+    let mut arg_iter = args_ptr.borrow().iter();
+    let v1 = arg_iter.next().unwrap();
+
+    format!("*{}", gen(&v1))
+}
+
+fn gen_cons_dstar(args: &types::LispExpRef) -> String {
+    let args_ptr = args.upgrade().unwrap();
+
+    let mut arg_iter = args_ptr.borrow().iter();
+    let v1 = arg_iter.next().unwrap();
+
+    format!("**{}", gen(&v1))
 }
 
 pub fn gen(exp: &types::LispExpRef) -> String {

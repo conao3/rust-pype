@@ -105,6 +105,7 @@ fn main() {
     let e = gen_python::do_e(&opts, &args, &mut arena);
     let e = gen_python::do_l(e, &opts, &args, &mut arena);
     let e = gen_python::do_n(e, &opts, &args, &mut arena);
+    let e = gen_python::do_l_post(e, &opts, &args, &mut arena);
     let e = pype::alloc!(arena, [c11, [c12, c13, c14], c15, e]);
 
     println!("{}", generator::gen(&e));
