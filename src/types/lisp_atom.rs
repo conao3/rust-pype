@@ -6,6 +6,7 @@ pub enum LispAtom {
     Float(f64),
     String(String),
     Symbol(String),
+    RawText(String),
 }
 
 impl fmt::Display for LispAtom {
@@ -15,6 +16,7 @@ impl fmt::Display for LispAtom {
             LispAtom::Float(e) => write!(f, "{}", e),
             LispAtom::String(e) => write!(f, "\"{}\"", e),
             LispAtom::Symbol(e) => write!(f, "{}", e),
+            LispAtom::RawText(e) => write!(f, "{}", e),
         }
     }
 }
@@ -49,5 +51,12 @@ impl LispAtom {
         T: Into<String>,
     {
         LispAtom::Symbol(str.into())
+    }
+
+    pub fn new_raw_text<T>(str: T) -> Self
+    where
+        T: Into<String>,
+    {
+        LispAtom::RawText(str.into())
     }
 }

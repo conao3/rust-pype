@@ -13,6 +13,7 @@ fn argparse() -> (getopts::Options, getopts::Matches) {
 
     opts.optflag("h", "help", "print this help menu");
     opts.optflag("v", "version", "print the version");
+    opts.optopt("e", "", "command", "command");
 
     let args = match opts.parse(std::env::args().skip(1)) {
         Ok(args) => args,
@@ -66,8 +67,16 @@ fn main() {
     let c42 = arena.alloc(types::LispAtom::new_symbol("end").into());
     let c43 = arena.alloc("".into());
 
-    let e1 = pype::alloc!(arena, [c41, c42, c43]);
-    let e2 = pype::alloc!(arena, [c31, c32, c33, e1]);
+    let e2 = match args.opt_str("e") {
+        Some(cmd) => {
+            arena.alloc(types::LispAtom::new_raw_text(cmd).into())
+        },
+        None => {
+            let e1 = pype::alloc!(arena, [c41, c42, c43]);
+            let e2 = pype::alloc!(arena, [c31, c32, c33, e1]);
+            e2
+        }
+    };
     let e3 = pype::alloc!(arena, [c21, c22, c23, e2]);
     let e4 = pype::alloc!(arena, [c11, [c12, c13, c14], c15, e3]);
 
