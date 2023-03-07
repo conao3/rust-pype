@@ -6,5 +6,6 @@ description = "Python oneliner helper"
 license = "Apache-2.0"
 
 [dependencies]
+getopts = "0.2.21"
 nix = "0.26.2"
 tempfile = "3.3.0"

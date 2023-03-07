@@ -8,6 +8,35 @@ use std::{
     process,
 };
 
+fn argparse() -> (getopts::Options, getopts::Matches) {
+    let mut opts = getopts::Options::new();
+
+    opts.optflag("h", "help", "print this help menu");
+    opts.optflag("v", "version", "print the version");
+
+    let args = match opts.parse(std::env::args().skip(1)) {
+        Ok(args) => args,
+        Err(err) => {
+            eprintln!("{}", err);
+            eprint!("{}", opts.usage("Usage: pype [options]"));
+            process::exit(1);
+        }
+    };
+
+    if args.opt_present("help") {
+        print!("{}", opts.usage("Usage: pype [options]"));
+        process::exit(0);
+    }
+
+    if args.opt_present("version") {
+        println!("pype {}", env!("CARGO_PKG_VERSION"));
+        print!("{}", opts.usage("Usage: pype [options]"));
+        process::exit(0);
+    }
+
+    (opts, args)
+}
+
 fn main() {
     let tmp_dir = tempfile::tempdir().unwrap();
     let pid = process::id();
@@ -15,6 +44,8 @@ fn main() {
     nix::unistd::mkfifo(&fifo_path, nix::sys::stat::Mode::S_IRWXU).unwrap();
 
     let fifo_path_str = fifo_path.to_str().unwrap();
+
+    let (_opts, args) = argparse();
 
     let mut arena = types::LispArena::default();
     let c11 = arena.alloc(types::LispAtom::new_symbol("with").into());
