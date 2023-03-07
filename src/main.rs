@@ -14,6 +14,8 @@ fn argparse() -> (getopts::Options, getopts::Matches) {
     opts.opt("h", "help", "print this help menu", "", getopts::HasArg::No, getopts::Occur::Optional);
     opts.opt("v", "version", "print the version", "", getopts::HasArg::No, getopts::Occur::Optional);
     opts.opt("e", "", "one line of program", "command", getopts::HasArg::Yes, getopts::Occur::Multi);
+    opts.opt("n", "", "iterate over lines", "", getopts::HasArg::No, getopts::Occur::Optional);
+    opts.opt("l", "", "strip trailing newline", "", getopts::HasArg::No, getopts::Occur::Optional);
 
     let args = match opts.parse(std::env::args().skip(1)) {
         Ok(args) => args,
@@ -46,7 +48,7 @@ fn main() {
 
     let fifo_path_str = fifo_path.to_str().unwrap();
 
-    let (_opts, args) = argparse();
+    let (opts, args) = argparse();
 
     let mut arena = types::LispArena::default();
     let c11 = arena.alloc(types::LispAtom::new_symbol("with").into());
@@ -55,16 +57,12 @@ fn main() {
     let c14 = arena.alloc(fifo_path_str.into());
     let c15 = arena.alloc(types::LispAtom::new_symbol("f").into());
 
-    let c21 = arena.alloc(types::LispAtom::new_symbol("for").into());
-    let c22 = arena.alloc(types::LispAtom::new_symbol("line").into());
-    let c23 = arena.alloc(types::LispAtom::new_symbol("f").into());
+    let e = gen_python::do_e(&opts, &args, &mut arena);
+    let e = gen_python::do_l(e, &opts, &args, &mut arena);
+    let e = gen_python::do_n(e, &opts, &args, &mut arena);
+    let e = pype::alloc!(arena, [c11, [c12, c13, c14], c15, e]);
 
-
-    let e2 = gen_python::do_e(_opts, args, &mut arena);
-    let e3 = pype::alloc!(arena, [c21, c22, c23, e2]);
-    let e4 = pype::alloc!(arena, [c11, [c12, c13, c14], c15, e3]);
-
-    println!("{}", generator::gen(&e4));
+    println!("{}", generator::gen(&e));
 
     io::stdout().flush().unwrap();
     nix::unistd::close(1).unwrap();

@@ -33,6 +33,8 @@ fn gen_cons(car: &types::LispExpRef, cdr: &types::LispExpRef) -> String {
         "for" => gen_cons_for(cdr),
         "with" => gen_cons_with(cdr),
         "progn" => gen_cons_progn(cdr),
+        "attr" => gen_cons_attr(cdr),
+        "assign" => gen_cons_assign(cdr),
         _ => panic!("Unknown function: {}", fn_),
     }
 }
@@ -84,6 +86,26 @@ fn gen_cons_progn(args: &types::LispExpRef) -> String {
 
     let arg_iter = args_ptr.borrow().iter();
     arg_iter.map(|x| gen(&x)).collect::<Vec<_>>().join("\n")
+}
+
+fn gen_cons_attr(args: &types::LispExpRef) -> String {
+    let args_ptr = args.upgrade().unwrap();
+
+    let mut arg_iter = args_ptr.borrow().iter();
+    let v1 = arg_iter.next().unwrap();
+    let v2 = arg_iter.next().unwrap();
+
+    format!("{}.{}", gen(&v1), gen(&v2))
+}
+
+fn gen_cons_assign(args: &types::LispExpRef) -> String {
+    let args_ptr = args.upgrade().unwrap();
+
+    let mut arg_iter = args_ptr.borrow().iter();
+    let v1 = arg_iter.next().unwrap();
+    let v2 = arg_iter.next().unwrap();
+
+    format!("{} = {}", gen(&v1), gen(&v2))
 }
 
 pub fn gen(exp: &types::LispExpRef) -> String {
@@ -227,5 +249,30 @@ with open(\"./temp\") as f:
 print(\"hello\")
 print(\"world\")";
         assert_eq!(gen(&e1), expect.to_string());
+    }
+
+    #[test]
+    fn test_gen_attr() {
+        let mut arena = types::LispArena::default();
+        let c1 = arena.alloc(types::LispAtom::new_symbol("attr").into());
+        let c2 = arena.alloc(types::LispAtom::new_symbol("foo").into());
+        let c3 = arena.alloc(types::LispAtom::new_symbol("bar").into());
+
+        let e1 = crate::alloc!(arena, [c1, c2, c3]);
+        assert_eq!(gen(&e1), "foo.bar".to_string());
+    }
+
+    #[test]
+    fn test_gen_attr_call() {
+        let mut arena = types::LispArena::default();
+        let c1 = arena.alloc(types::LispAtom::new_symbol("attr").into());
+        let c2 = arena.alloc(types::LispAtom::new_symbol("foo").into());
+        let c3 = arena.alloc(types::LispAtom::new_symbol("bar").into());
+        let c4 = arena.alloc(types::LispAtom::new_symbol("call").into());
+
+        let e1 = crate::alloc!(arena, [c1, c2, c3]);
+        let e2 = crate::alloc!(arena, [c4, e1]);
+
+        assert_eq!(gen(&e2), "foo.bar()".to_string());
     }
 }
