@@ -76,14 +76,24 @@ fn argparse() -> (getopts::Options, getopts::Matches) {
 }
 
 fn main() {
+    let (opts, args) = argparse();
+
+    // no -e: stdin is python code.  Just copy it to stdout.
+    if !args.opt_present("e") {
+        let r = io::stdin();
+        let w = io::stdout();
+        let mut r = r.lock();
+        let mut w = w.lock();
+        let _ = io::copy(&mut r, &mut w);
+        return;
+    }
+
     let tmp_dir = tempfile::tempdir().unwrap();
     let pid = process::id();
     let fifo_path = tmp_dir.path().join(format!("pype__{pid}.fifo"));
     nix::unistd::mkfifo(&fifo_path, nix::sys::stat::Mode::S_IRWXU).unwrap();
 
     let fifo_path_str = fifo_path.to_str().unwrap();
-
-    let (opts, args) = argparse();
 
     let mut arena = types::LispArena::default();
     let c11 = arena.alloc(types::LispAtom::new_symbol("with").into());
