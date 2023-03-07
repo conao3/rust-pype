@@ -51,6 +51,14 @@ fn argparse() -> (getopts::Options, getopts::Matches) {
         getopts::HasArg::No,
         getopts::Occur::Optional,
     );
+    opts.opt(
+        "m",
+        "module",
+        "import module",
+        "module",
+        getopts::HasArg::Yes,
+        getopts::Occur::Multi,
+    );
 
     let args = match opts.parse(std::env::args().skip(1)) {
         Ok(args) => args,
@@ -101,7 +109,10 @@ fn main() {
     let e = gen_python::do_n(e, &opts, &args, &mut arena);
     let e = gen_python::do_l_post(e, &opts, &args, &mut arena);
     let e = gen_python::do_inpt(e, fifo_path_str, &opts, &args, &mut arena);
+    let e = gen_python::do_m(e, &opts, &args, &mut arena);
 
+    // let e_ptr = e.upgrade().unwrap();
+    // println!("{}", e_ptr.borrow().to_string());
     println!("{}", generator::gen(&e));
 
     io::stdout().flush().unwrap();

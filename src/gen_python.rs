@@ -122,3 +122,25 @@ pub fn do_l_post(
         }
     }
 }
+
+pub fn do_m(
+    cur: types::LispExpRef,
+    _opts: &getopts::Options,
+    args: &getopts::Matches,
+    arena: &mut types::LispArena,
+) -> types::LispExpRef {
+    let modules = args.opt_strs("m");
+    if modules.is_empty() {
+        return cur;
+    }
+
+    let s_progn = arena.alloc(types::LispAtom::new_symbol("progn").into());
+    let s_import = arena.alloc(types::LispAtom::new_symbol("import").into());
+
+    let mut cur = crate::alloc!(arena, [cur]);
+    for module in modules.iter().rev() {
+        let v = arena.alloc(types::LispAtom::new_raw_text(module).into());
+        cur = crate::alloc!(arena, [[s_import, v]; cur]);
+    }
+    crate::alloc!(arena, [s_progn; cur])
+}
