@@ -234,10 +234,7 @@ with open(\"./temp\") as f:
         let mut arena = types::LispArena::default();
         let c1 = arena.alloc(types::LispAtom::new_symbol("progn").into());
 
-        let args = [
-            "print(\"hello\")",
-            "print(\"world\")",
-        ];
+        let args = ["print(\"hello\")", "print(\"world\")"];
         let mut cur = crate::alloc!(arena, []);
         for arg in args.iter().rev() {
             let c2 = arena.alloc(types::LispAtom::new_raw_text(*arg).into());

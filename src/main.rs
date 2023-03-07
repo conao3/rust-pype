@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 
-use pype::{generator, types, gen_python};
+use pype::{gen_python, generator, types};
 
 use std::{
     fs,
@@ -11,11 +11,46 @@ use std::{
 fn argparse() -> (getopts::Options, getopts::Matches) {
     let mut opts = getopts::Options::new();
 
-    opts.opt("h", "help", "print this help menu", "", getopts::HasArg::No, getopts::Occur::Optional);
-    opts.opt("v", "version", "print the version", "", getopts::HasArg::No, getopts::Occur::Optional);
-    opts.opt("e", "", "one line of program", "command", getopts::HasArg::Yes, getopts::Occur::Multi);
-    opts.opt("n", "", "iterate over lines", "", getopts::HasArg::No, getopts::Occur::Optional);
-    opts.opt("l", "", "strip trailing newline", "", getopts::HasArg::No, getopts::Occur::Optional);
+    opts.opt(
+        "h",
+        "help",
+        "print this help menu",
+        "",
+        getopts::HasArg::No,
+        getopts::Occur::Optional,
+    );
+    opts.opt(
+        "v",
+        "version",
+        "print the version",
+        "",
+        getopts::HasArg::No,
+        getopts::Occur::Optional,
+    );
+    opts.opt(
+        "e",
+        "",
+        "one line of program",
+        "command",
+        getopts::HasArg::Yes,
+        getopts::Occur::Multi,
+    );
+    opts.opt(
+        "n",
+        "",
+        "iterate over lines",
+        "",
+        getopts::HasArg::No,
+        getopts::Occur::Optional,
+    );
+    opts.opt(
+        "l",
+        "",
+        "strip trailing newline",
+        "",
+        getopts::HasArg::No,
+        getopts::Occur::Optional,
+    );
 
     let args = match opts.parse(std::env::args().skip(1)) {
         Ok(args) => args,
