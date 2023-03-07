@@ -32,6 +32,7 @@ fn gen_cons(car: &types::LispExpRef, cdr: &types::LispExpRef) -> String {
         "call" => gen_cons_call(cdr),
         "for" => gen_cons_for(cdr),
         "with" => gen_cons_with(cdr),
+        "progn" => gen_cons_progn(cdr),
         _ => panic!("Unknown function: {}", fn_),
     }
 }
@@ -78,6 +79,13 @@ fn gen_cons_with(args: &types::LispExpRef) -> String {
     format!("with {} as {}:\n{}", gen(&v1), gen(&v2), indent(&gen(&v3)))
 }
 
+fn gen_cons_progn(args: &types::LispExpRef) -> String {
+    let args_ptr = args.upgrade().unwrap();
+
+    let arg_iter = args_ptr.borrow().iter();
+    arg_iter.map(|x| gen(&x)).collect::<Vec<_>>().join("\n")
+}
+
 pub fn gen(exp: &types::LispExpRef) -> String {
     let exp_ptr = exp.upgrade().unwrap();
     let x = match &*exp_ptr.borrow() {
@@ -87,6 +95,7 @@ pub fn gen(exp: &types::LispExpRef) -> String {
     x
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -196,5 +205,27 @@ with open(\"./temp\") as f:
     for line in f:
         print(line, end=\"\")";
         assert_eq!(gen(&e4), expect.to_string());
+    }
+
+    #[test]
+    fn test_gen_progn() {
+        let mut arena = types::LispArena::default();
+        let c1 = arena.alloc(types::LispAtom::new_symbol("progn").into());
+
+        let args = [
+            "print(\"hello\")",
+            "print(\"world\")",
+        ];
+        let mut cur = crate::alloc!(arena, []);
+        for arg in args.iter().rev() {
+            let c2 = arena.alloc(types::LispAtom::new_raw_text(*arg).into());
+            cur = crate::alloc!(arena, [c2; cur]);
+        }
+
+        let e1 = crate::alloc!(arena, [c1; cur]);
+        let expect = "\
+print(\"hello\")
+print(\"world\")";
+        assert_eq!(gen(&e1), expect.to_string());
     }
 }
