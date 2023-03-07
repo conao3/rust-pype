@@ -1,5 +1,21 @@
 use crate::types;
 
+pub fn do_inpt(
+    cur: types::LispExpRef,
+    fifo_path_str: &str,
+    _opts: &getopts::Options,
+    _args: &getopts::Matches,
+    arena: &mut types::LispArena,
+) -> types::LispExpRef {
+    let s_with = arena.alloc(types::LispAtom::new_symbol("with").into());
+    let s_call = arena.alloc(types::LispAtom::new_symbol("call").into());
+    let s_open = arena.alloc(types::LispAtom::new_symbol("open").into());
+    let s_f = arena.alloc(types::LispAtom::new_symbol("f").into());
+    let v_fifo_path = arena.alloc(fifo_path_str.into());
+
+    crate::alloc!(arena, [s_with, [s_call, s_open, v_fifo_path], s_f, cur])
+}
+
 pub fn do_e(
     _opts: &getopts::Options,
     args: &getopts::Matches,

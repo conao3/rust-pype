@@ -96,17 +96,11 @@ fn main() {
     let fifo_path_str = fifo_path.to_str().unwrap();
 
     let mut arena = types::LispArena::default();
-    let c11 = arena.alloc(types::LispAtom::new_symbol("with").into());
-    let c12 = arena.alloc(types::LispAtom::new_symbol("call").into());
-    let c13 = arena.alloc(types::LispAtom::new_symbol("open").into());
-    let c14 = arena.alloc(fifo_path_str.into());
-    let c15 = arena.alloc(types::LispAtom::new_symbol("f").into());
-
     let e = gen_python::do_e(&opts, &args, &mut arena);
     let e = gen_python::do_l(e, &opts, &args, &mut arena);
     let e = gen_python::do_n(e, &opts, &args, &mut arena);
     let e = gen_python::do_l_post(e, &opts, &args, &mut arena);
-    let e = pype::alloc!(arena, [c11, [c12, c13, c14], c15, e]);
+    let e = gen_python::do_inpt(e, fifo_path_str, &opts, &args, &mut arena);
 
     println!("{}", generator::gen(&e));
 
