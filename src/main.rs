@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 
-use pype::types;
+use pype::{generator, types};
 
 use std::{
     fs,
@@ -15,73 +15,33 @@ fn main() {
     nix::unistd::mkfifo(&fifo_path, nix::sys::stat::Mode::S_IRWXU).unwrap();
 
     let fifo_path_str = fifo_path.to_str().unwrap();
-    print!(
-        r###"
-with open("{fifo_path_str}") as f:
-    for line in f:
-        print(line, end="")
-"###
-    );
-    // let print_expr = types::expression::PyCall {
-    //     function: Box::new(types::expression::PyIdent::from("print").into()),
-    //     arguments: vec![
-    //         types::expression::PyIdent::from("line").into(),
-    //         ("end", "").into(),
-    //     ],
-    // };
-    // let for_expr = types::statement::PyFor {
-    //     targets: vec![types::expression::PyIdent::from("line")],
-    //     iterator: Box::new(types::expression::PyIdent::from("f").into()),
-    //     body: vec![print_expr],
-    // };
-    // let program = types::statement::PyProgram {
-    //     statements: vec![
-    //         types::statement::PyWith {
-    //             expression: types::expression::PyCall {
-    //                 function: types::expression::PyIdent {
-    //                     ident: "open".to_string(),
-    //                 },
-    //                 arguments: vec![types::expression::PyString {
-    //                     string: fifo_path_str.to_string(),
-    //                 }],
-    //             },
-    //             target: types::expression::PyIdent {
-    //                 ident: "f".to_string(),
-    //             },
-    //             body: vec![
-    //                 types::statement::PyFor {
-    //                     target: types::expression::PyIdent {
-    //                         ident: "line".to_string(),
-    //                     },
-    //                     iterator: types::expression::PyCall {
-    //                         function: types::expression::PyIdent {
-    //                             ident: "f".to_string(),
-    //                         },
-    //                         arguments: vec![],
-    //                     },
-    //                     body: vec![types::statement::PyPrint {
-    //                         expression: types::expression::PyCall {
-    //                             function: types::expression::PyIdent {
-    //                                 ident: "print".to_string(),
-    //                             },
-    //                             arguments: vec![
-    //                                 types::expression::PyIdent {
-    //                                     ident: "line".to_string(),
-    //                                 },
-    //                                 types::PyKeywordArgument {
-    //                                     name: "end".to_string(),
-    //                                     expression: types::expression::PyString {
-    //                                         string: "".to_string(),
-    //                                     },
-    //                                 },
-    //                             ],
-    //                         },
-    //                     }],
-    //                 },
-    //             ]
-    //         }
-    //     ]
-    // };
+
+    let mut arena = types::LispArena::default();
+    let c11 = arena.alloc(types::LispAtom::new_symbol("with").into());
+    let c12 = arena.alloc(types::LispAtom::new_symbol("call").into());
+    let c13 = arena.alloc(types::LispAtom::new_symbol("open").into());
+    let c14 = arena.alloc(fifo_path_str.into());
+    let c15 = arena.alloc(types::LispAtom::new_symbol("f").into());
+
+    let c21 = arena.alloc(types::LispAtom::new_symbol("for").into());
+    let c22 = arena.alloc(types::LispAtom::new_symbol("line").into());
+    let c23 = arena.alloc(types::LispAtom::new_symbol("f").into());
+
+    let c31 = arena.alloc(types::LispAtom::new_symbol("call").into());
+    let c32 = arena.alloc(types::LispAtom::new_symbol("print").into());
+    let c33 = arena.alloc(types::LispAtom::new_symbol("line").into());
+
+    let c41 = arena.alloc(types::LispAtom::new_symbol("kw").into());
+    let c42 = arena.alloc(types::LispAtom::new_symbol("end").into());
+    let c43 = arena.alloc("".into());
+
+    let e1 = pype::alloc!(arena, [c41, c42, c43]);
+    let e2 = pype::alloc!(arena, [c31, c32, c33, e1]);
+    let e3 = pype::alloc!(arena, [c21, c22, c23, e2]);
+    let e4 = pype::alloc!(arena, [c11, [c12, c13, c14], c15, e3]);
+
+    println!("{}", generator::gen(&e4));
+
     io::stdout().flush().unwrap();
     nix::unistd::close(1).unwrap();
 
