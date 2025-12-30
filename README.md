@@ -1,99 +1,110 @@
-# rust-pype
+# pype
 
-Python one-liner helper written in Rust.
+A Python one-liner helper written in Rust. Inspired by Perl's command-line options, pype makes it easy to write quick Python scripts for text processing directly from the command line.
 
-## Install
+## Installation
 
 ```bash
 cargo install pype
 ```
 
+## Overview
+
+pype generates Python code from concise command-line arguments and pipes it to the Python interpreter. Standard input is available as the variable `f` (a file object).
+
 ## Usage
 
-stdin is opened as `f`.
+### Basic Example
 
-Prepare `sample1` file.
+Create a sample file for the examples below:
+
 ```bash
-cat > sample1
+cat > sample.txt << 'EOF'
 1
 2
 3
+EOF
 ```
 
-### -e option
+### Execute Python Code (`-e`)
 
-Execute specified python code.
-
-```bash
-$ cat sample1 | pype -e 'print(f.read())' | python
-1
-2
-3
-```
+Run arbitrary Python code with access to stdin via the `f` variable:
 
 ```bash
-$ cat sample1 | pype -e 'print(f.read().splitlines())' | python
-['1', '2', '3']
-```
-
-### -n option
-
-Execute specified python code per line.  You can access via `line` variable to each line.
-
-```bash
-$ cat sample1 | pype -ne 'print("- " + line)' | python
-- 1
-- 2
-- 3
+cat sample.txt | pype -e 'print(f.read())' | python
+# Output:
+# 1
+# 2
+# 3
 ```
 
 ```bash
-$ cat sample1 | pype -ne 'print("- " + line + "$")' | python
-- 1
-$- 2
-$- 3
+cat sample.txt | pype -e 'print(f.read().splitlines())' | python
+# Output: ['1', '2', '3']
 ```
 
-### -l option
+### Line-by-Line Processing (`-n`)
 
-Available when `-n` is specified.  Removes trailing newlines from the input and adds newlines to `print`.
+Process each line individually. The current line is available as the `line` variable:
 
 ```bash
-$ cat sample1 | pype -nle 'print("- " + line)' | python
-- 1
-- 2
-- 3
+cat sample.txt | pype -ne 'print("- " + line)' | python
+# Output:
+# - 1
+# - 2
+# - 3
 ```
+
+### Auto-Chomp Mode (`-l`)
+
+Use with `-n` to automatically strip trailing newlines from input lines. This makes line processing cleaner:
 
 ```bash
-$ cat sample1 | pype -nle 'print("- " + line + "$")' | python
-- 1$
-- 2$
-- 3$
+cat sample.txt | pype -nle 'print("- " + line + " [end]")' | python
+# Output:
+# - 1 [end]
+# - 2 [end]
+# - 3 [end]
 ```
 
-### -m option
-
-Import specified module before executing python code.
+Without `-l`, the trailing newline would remain:
 
 ```bash
-cat sample1 | pype -m datetime -nle 'print(f"- {line}:", (datetime.date.today() + datetime.timedelta(days=int(line))))' | python
-- 1: 2023-03-09
-- 2: 2023-03-10
-- 3: 2023-03-11
+cat sample.txt | pype -ne 'print("- " + line + " [end]")' | python
+# Output:
+# - 1
+#  [end]- 2
+#  [end]- 3
+#  [end]
 ```
 
-You can use any Python module such as `beautifulsoup4`.
+### Import Modules (`-m`)
+
+Import Python modules for use in your code:
 
 ```bash
-$ curl -L dev.to | pype -m bs4 -le 'for a in bs4.BeautifulSoup(f.read(), "html.parser").find_all("h2", class_="crayons-story__title"):print(a.text.strip())' | python
-Top 7 Featured DEV Posts from the Past Week
-Six Years on DEV, Already?
-Open Source Maintenance is Community Organizing
-The Awesome Side of GitHub - Awesome Lists
-Codility === Sadness
-Meme Monday 😝
+cat sample.txt | pype -m datetime -nle 'print(f"Day {line}: {datetime.date.today() + datetime.timedelta(days=int(line))}")' | python
+# Output:
+# Day 1: 2023-03-09
+# Day 2: 2023-03-10
+# Day 3: 2023-03-11
 ```
+
+Works with any installed Python package. Here's an example using BeautifulSoup to scrape headlines:
+
+```bash
+curl -sL dev.to | pype -m bs4 -le 'soup = bs4.BeautifulSoup(f.read(), "html.parser"); [print(h.text.strip()) for h in soup.find_all("h2", class_="crayons-story__title")]' | python
+```
+
+## Options Summary
+
+| Option | Description |
+|--------|-------------|
+| `-e <code>` | Execute the given Python code |
+| `-n` | Process input line by line (exposes `line` variable) |
+| `-l` | Strip trailing newlines from each line (use with `-n`) |
+| `-m <module>` | Import a Python module before execution |
 
 ## License
+
 Apache License 2.0
